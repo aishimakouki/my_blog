@@ -1,12 +1,11 @@
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update, :destroy]
-  def index
-    # 記事一覧用
-      @posts = Post.all
-      # 最新記事用
-      @new_posts = Post.all
-      @author = Author.first
 
+  def index
+    @q = Post.order(created_at: :desc).ransack(params[:q])
+     @posts = @q.result.page(params[:page]).per(2)
+    @new_posts = Post.find_newest_article
+    @author = Author.first
   end
 
   def show
@@ -39,7 +38,7 @@ class PostsController < ApplicationController
 
   def set_post
     @post = Post.find(params[:id])
-  end  
+  end
 
   def post_params
     params.require(:post).permit(:title, :body, :category)
